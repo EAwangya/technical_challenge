@@ -68,3 +68,35 @@ $ docker run --cap-drop=ALL --cap-add=CHOWN example-image:latest
 Using privileged mode (--privileged) is a security risk that should be avoided unless you’re certain it’s required. Containers that run in privileged mode are granted all available Linux capabilities and have some cgroups restrictions lifted. This allows them to achieve almost anything that the host machine can.
 
 Containerized apps very rarely require privileged mode. It’s typically only useful when you’re running an application that needs full access to your host or the ability to manage other Docker containers.
+
+ ***Dockerfile With best practices***
+
+ ```
+# Stage 1: The final NGINX image
+FROM nginx:1.27-alpine
+
+# Set the working directory (optional, but good practice)
+WORKDIR /usr/share/nginx/html
+
+# Copy static content directly. A build stage isn't needed for a single file.
+COPY index.html .
+
+# Copy your custom NGINX configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Create a non-root user and group for security
+RUN addgroup -S web \
+    && adduser -S web -G web \
+    && chown -R web:web /var/cache/nginx /var/run /var/log/nginx \
+    && chown -R web:web /usr/share/nginx/html
+
+# Switch to the non-root user. This user must be able to write to cache/logs.
+USER web
+
+# Expose the port that NGINX is configured to listen on.
+# We'll assume your nginx.conf has `listen 8080;`.
+EXPOSE 8080
+
+# Run NGINX. The daemon off; part is crucial for Docker.
+CMD ["nginx", "-g", "daemon off;"]
+ ```
