@@ -20,11 +20,15 @@ The exercise is designed to evaluate skills in **cybersecurity, container securi
 │   ├── k8s-security.yaml       # Kubernetes Pod spec with securityContext settings
 │   └── IaaS_Security.md        # Write-up on IaaS security concepts and implications
 │
-├── Part3_CICD/                 
-│   ├── ansible_playbook.yml    # Example configuration management script (Ansible)
-│   ├── Jenkinsfile             # Jenkins pipeline: build, test, security scan, deploy to Azure
-│   └── github-actions.yml      # (Optional) GitHub Actions workflow for AWS Lambda
-│
+├── Part3_CICD/ 
+│   ├── Jenkinsfile               # Jenkins pipeline: build, test, security scan, deploy to Azure
+│   ├── ansible                   
+│   │   ├── README.md
+│   │   ├── ansible_playbook.yml. # Example configuration management script (Ansible)
+│   │   ├── files                 # Foldee containing HTML file(s)
+│   │   │   └── index.html        # Index.html file to be deployed in NGINX
+│   │   └── inventory             # Ansible inventory file
+│   └── jenkins.md
 ├── docs/                       # Any additional supporting documents (PDFs, slides, notes)
 │   └── TEKSystemsChallenge.pdf
 │
