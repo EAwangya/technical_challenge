@@ -1,7 +1,6 @@
 # TEKsystems Controls Deployment Engineer Challenge
 
 This repository contains my solutions and supporting files for the **TEKsystems Control Deployment Engineer Challenge**.  
-The exercise is designed to evaluate skills in **cybersecurity, container security, orchestration, IaaS, and CI/CD pipeline management**  .  
 
 ---
 
@@ -33,3 +32,9 @@ The exercise is designed to evaluate skills in **cybersecurity, container securi
 │   └── TEKSystemsChallenge.pdf
 │
 └── README.md                   # You are here – overview and instructions
+
+
+> **Note:**  
+> The **Ansible playbook** and **Jenkinsfile** have been tested and verified to run as intended.  
+> Not all supporting files and directories are included in this submission.  
+> If needed, we can schedule a live session for a full demonstration and walkthrough.  
