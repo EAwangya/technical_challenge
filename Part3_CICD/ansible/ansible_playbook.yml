@@ -2,25 +2,47 @@
 - name: Deploy NGINX Web Server with Custom Homepage
   hosts: webservers
   become: yes
+  gather_facts: yes
 
   vars:
-    nginx_package: nginx
+    # Supported OS families
+    supported_os_families:
+      - RedHat
+      - Debian
+
+    # Web server paths
     web_root: /usr/share/nginx/html
     index_file: "{{ web_root }}/index.html"
     local_index_path: files/index.html
 
-  tasks:
+  pre_tasks:
+    - name: Validate supported operating system
+      assert:
+        that:
+          - ansible_os_family in supported_os_families
+        fail_msg: >-
+          Unsupported OS family: {{ ansible_os_family }}.
+          Supported families: {{ supported_os_families | join(', ') }}.
+        success_msg: "OS family {{ ansible_os_family }} is supported."
 
+    - name: Set package and service names
+      set_fact:
+        nginx_package: nginx
+        nginx_service: nginx
+
+  tasks:
     - name: Install NGINX
       package:
         name: "{{ nginx_package }}"
         state: present
+      tags: nginx
 
     - name: Ensure NGINX is running and enabled
       service:
-        name: "{{ nginx_package }}"
+        name: "{{ nginx_service }}"
         state: started
         enabled: yes
+      tags: nginx
 
     - name: Upload custom index.html
       copy:
@@ -29,22 +51,11 @@
         owner: root
         group: root
         mode: '0644'
-
-    - name: Open HTTP port in firewall (if firewalld is running)
-      when: ansible_os_family == "RedHat"
-      firewalld:
-        service: http
-        permanent: yes
-        state: enabled
-        immediate: yes
-
-    - name: Reload firewalld
-      when: ansible_os_family == "RedHat"
-      command: firewall-cmd --reload
       notify: Restart NGINX
+      tags: content
 
   handlers:
     - name: Restart NGINX
       service:
-        name: "{{ nginx_package }}"
+        name: "{{ nginx_service }}"
         state: restarted
