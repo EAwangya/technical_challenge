@@ -1,1 +1,31 @@
-test
+# TEKsystems Controls Deployment Engineer Challenge
+
+This repository contains my solutions and supporting files for the **TEKsystems Control Deployment Engineer Challenge**.  
+The exercise is designed to evaluate skills in **cybersecurity, container security, orchestration, IaaS, and CI/CD pipeline management**  .  
+
+---
+
+## Repository Structure
+
+```bash
+.
+├── Part1_Cybersecurity/        # Documentation and reports for the cybersecurity scenario
+│   ├── Threat_Intelligence.md  # Threat report: attack types, exploitation, preventive measures
+│   ├── Incident_Response.md    # Incident response plan: containment, eradication, recovery
+│   └── Network_Security.md     # Recommended network security measures (IDS/IPS, firewalls, segmentation)
+│
+├── Part2_ContainerSecurity/    
+│   ├── Dockerfile              # Example implementation of Docker security best practices
+│   ├── Docker_Security.md      # Documentation on 5 Docker security best practices
+│   ├── k8s-security.yaml       # Kubernetes Pod spec with securityContext settings
+│   └── IaaS_Security.md        # Write-up on IaaS security concepts and implications
+│
+├── Part3_CICD/                 
+│   ├── ansible_playbook.yml    # Example configuration management script (Ansible)
+│   ├── Jenkinsfile             # Jenkins pipeline: build, test, security scan, deploy to Azure
+│   └── github-actions.yml      # (Optional) GitHub Actions workflow for AWS Lambda
+│
+├── docs/                       # Any additional supporting documents (PDFs, slides, notes)
+│   └── TEKSystems Challenge.pdf
+│
+└── README.md                   # You are here – overview and instructions

@@ -60,4 +60,4 @@ It ensures that NGINX is installed, running, enabled on boot, and configured to 
 ## How to Run
 
 ```bash
-ansible-playbook -i inventory deploy-nginx.yml
+ansible-playbook -i inventory ansible_playbook.yml
