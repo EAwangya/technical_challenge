@@ -5,12 +5,9 @@
   gather_facts: yes
 
   vars:
-    # Supported OS families
     supported_os_families:
       - RedHat
       - Debian
-
-    # Web server paths
     web_root: /usr/share/nginx/html
     index_file: "{{ web_root }}/index.html"
     local_index_path: files/index.html
