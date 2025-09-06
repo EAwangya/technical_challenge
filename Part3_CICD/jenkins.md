@@ -56,10 +56,10 @@ The pipeline is structured into several key stages to ensure a smooth and automa
 - **Details:** Uses a service principal to securely log into Azure, preparing for subsequent infrastructure provisioning and deployment.
 
 #### **13. Provision AKS Cluster**
-- **Purpose:** Creates or updates a Kubernetes cluster in Azure.
+- **Purpose:** Creates a Kubernetes cluster in Azure.
 - **Details:** Executes Terraform scripts to provision an Azure Kubernetes Service (AKS) cluster, demonstrating **Infrastructure as Code (IaC)**. This stage ensures a consistent and repeatable environment for deployment.
 
-#### **14. Deploy App on EKS**
+#### **14. Deploy App on AKS**
 - **Purpose:** Deploys the application to the Kubernetes cluster.
 - **Details:** Uses `kubectl` to apply the Kubernetes manifests from a dedicated directory, deploying the application's Docker image onto the provisioned AKS cluster.
 
