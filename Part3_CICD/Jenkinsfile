@@ -1,4 +1,4 @@
-// Utilizing the Declarative Jenkinsfile approach, I ensure a clean code checkout from the version control system.
+// Declarative Jenkinsfile with no hardcoded values
 def COLOR_MAP = [
     'SUCCESS': 'good',
     'FAILURE': 'danger',
@@ -9,41 +9,46 @@ def COLOR_MAP = [
 pipeline {
     agent any
     tools {
-        maven 'maven3'
-        jdk 'OracleJDK8'
+        maven 'MAVEN_TOOL'        // Configured Maven tool in Jenkins
+        jdk 'JDK_TOOL'            // Configured JDK tool in Jenkins
     }
 
     environment {
-        SNAP_REPO = 'eawangya-snapshot'
-        NEXUS_USER = 'admin'
-        NEXUS_PASS = 'admin123'
-        RELEASE_REPO = 'eawangya-release'
-        CENTRAL_REPO = 'eawangya-maven-central'
-        NEXUSIP = '192.168.56.18'
-        NEXUSPORT = '8081'
-        NEXUS_GRP_REPO = 'eawangya-group'
-        NEXUS_LOGIN = 'nexus-creds'
-        SONARSERVER = 'sonarserver'
-        SONARSCANNER = 'sonarscanner'
-        AZURE_CREDENTIALS = credentials('AzureServicePrincipal')
-        RESOURCE_GROUP = 'kube-rg'
-        LOCATION = 'Central US'
+        SNAP_REPO       = credentials('SNAPSHOT_REPO')
+        RELEASE_REPO    = credentials('RELEASE_REPO')
+        CENTRAL_REPO    = credentials('CENTRAL_REPO')
+        NEXUSIP         = credentials('NEXUS_IP')
+        NEXUSPORT       = credentials('NEXUS_PORT')
+        NEXUS_GRP_REPO  = credentials('NEXUS_GROUP')
+        NEXUS_LOGIN     = credentials('NEXUS_CREDS')
+        SONARSERVER     = 'SONAR_SERVER'
+        SONARSCANNER    = 'SONAR_SCANNER'
+        AZURE_CREDENTIALS = credentials('AZURE_CREDENTIALS')
+        RESOURCE_GROUP  = 'AZURE_RESOURCE_GROUP'
+        LOCATION        = 'AZURE_LOCATION'
+        DOCKER_IMAGE    = 'DOCKER_IMAGE'
+        DOCKER_TAG      = "v${env.BUILD_NUMBER}"
+        DOCKER_REGISTRY = 'DOCKER_REGISTRY'
+        DOCKER_CREDS    = 'DOCKER_CREDENTIALS'
+        GIT_REPO        = 'GIT_REPO_URL'
+        GIT_BRANCH      = 'GIT_BRANCH'
+        GIT_CREDS       = 'GIT_CREDENTIALS'
     }
 
     stages {
         stage('Git Checkout'){
             steps {
-                git branch: 'main', credentialsId: 'gitlab-creds', url: 'https://gitlab.com/ernest.awangya/profile_app.git'
+                git branch: "${GIT_BRANCH}", credentialsId: "${GIT_CREDS}", url: "${GIT_REPO}"
             }
         }
-        //The pipeline kicks off with a build and comprehensive testing phase, validating the integrity of the codebase.  
+
         stage('Build') {
             steps {
                 executeCommand('mvn -DskipTests clean install', 'Build failed')
             }
             post {
                 success {
-                    echo "Now Archiving..."
+                    echo "Archiving build artifacts..."
                     archiveArtifacts artifacts: '**/*.war'
                 }
             }
@@ -61,99 +66,99 @@ pipeline {
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
-        // Incorporating Checkstyle analysis ensures that our code adheres to predefined coding standards, promoting consistency.  
+
         stage('Checkstyle Analysis') {
             steps {
                 executeCommand('mvn checkstyle:checkstyle', 'Checkstyle analysis failed')
             }
         }
-        // Integrating SonarQube analysis provides in-depth code quality metrics, contributing to continuous improvement.
+
         stage('SonarQube Analysis') {
             environment {
                 def scannerHome = tool "${SONARSCANNER}"
             }
             steps {
                 withSonarQubeEnv("${SONARSERVER}") {
-                sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=eawangya \
-                    -Dsonar.projectName=eawangya \
-                    -Dsonar.projectVersion=1.0 \
-                    -Dsonar.sources=src/ \
-                    -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
-                    -Dsonar.junit.reportsPath=target/surefire-reports/ \
-                    -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-                    -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+                    sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=${JOB_NAME} \
+                        -Dsonar.projectName=${JOB_NAME} \
+                        -Dsonar.projectVersion=${BUILD_NUMBER} \
+                        -Dsonar.sources=src/ \
+                        -Dsonar.java.binaries=target/test-classes/ \
+                        -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                        -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                        -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    """
                 }
             }
         }
-        //Quality Gate is enforced through SonarQube, ensuring that only high-quality code progresses further in the pipeline.
+
         stage("Quality Gate"){
             steps {
                 timeout(time: 60, unit: 'MINUTES') {
-                waitForQualityGate abortPipeline: true
-
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
-        // Upon successful build and analysis, artifacts are securely uploaded to Nexus, serving as a centralized repository for dependencies.
+
         stage("Upload Artifact to Nexus") {
             steps {
                 nexusArtifactUploader(
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
-                    groupId: 'QA',
-                    version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                    groupId: 'GROUP_ID',
+                    version: "${BUILD_ID}-${BUILD_TIMESTAMP}",
                     repository: "${RELEASE_REPO}",
                     credentialsId: "${NEXUS_LOGIN}",
-                    artifacts: [
-                        [artifactId: 'vprofileapp',
-                            classifier: '',
-                            file: 'target/vprofile-v2.war',
-                            type: 'war']
-                    ]
+                    artifacts: [[
+                        artifactId: 'APP_ARTIFACT',
+                        classifier: '',
+                        file: 'target/*.war',
+                        type: 'war'
+                    ]]
                 )
             }
         }
-        // Docker images are built as part of the pipeline, encapsulating our applications for consistency across different environments.
+
         stage('Build Docker') {
             steps {
                 script {
-                    executeCommand('docker build -t eawangya/techharbor:version2 .', 'Docker build failed')
+                    executeCommand("docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} .", 'Docker build failed')
                 }
             }
         }
 
         stage('Trivy Image Scan') {
             steps {
-                executeCommand('trivy image eawangya/techharbor:version2', 'Trivy image scan failed')
+                executeCommand("trivy image ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}", 'Trivy image scan failed')
             }
         }
-        // These Docker images are then pushed to a Docker registry, facilitating efficient deployment.
+
         stage('Docker Push') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        executeCommand("echo \${PASS} | docker login -u \${USER} --password-stdin", 'Docker login failed')
-                        executeCommand("docker push eawangya/techharbor:version2", 'Docker push failed')
-
-                        // Clean Jenkins Server
-                        executeCommand("docker rmi -f \$(docker images -qa)", 'Docker image cleanup failed')
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDS}", passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        executeCommand("echo \${PASS} | docker login -u \${USER} --password-stdin ${DOCKER_REGISTRY}", 'Docker login failed')
+                        executeCommand("docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}", 'Docker push failed')
+                        executeCommand("docker rmi -f \$(docker images -qa)", 'Docker cleanup failed')
                     }
                 }
             }
         }
-        // The pipeline establishes a connection to Azure, a key step in our multi-cloud strategy
+
         stage('Azure Login') {
             steps {
                 script {
-                    withCredentials([azureServicePrincipal(credentialsId: 'AzureServicePrincipal', variable: 'AZURE_CREDENTIALS')]) {
-                        executeCommand("az login --service-principal --username $AZURE_CREDENTIALS_CLIENT_ID --password $AZURE_CREDENTIALS_CLIENT_SECRET --tenant $AZURE_CREDENTIALS_TENANT_ID", 'Azure login failed')
+                    withCredentials([azureServicePrincipal(credentialsId: "${AZURE_CREDENTIALS}", variable: 'AZURE')]) {
+                        executeCommand("az login --service-principal --username \$AZURE_CLIENT_ID --password \$AZURE_CLIENT_SECRET --tenant \$AZURE_TENANT_ID", 'Azure login failed')
                     }
                 }
             }
         }
-        // Leveraging Jenkins, I dynamically provision an EKS cluster on AWS using Terraform, ensuring infrastructure as code.
-        stage('Provision AKS cluster') {
+
+        stage('Provision AKS Cluster') {
             steps {
                 script {
                     dir('terraform') {
@@ -164,24 +169,23 @@ pipeline {
             }
         }
 
-        stage('Deploy App on EKS') {
+        stage('Deploy App on Kubernetes') {
             steps {
                 script {
-                    dir('kubenetes-files') {
+                    dir('kubernetes-files') {
                         executeCommand('kubectl apply -f .', 'App deployment failed')
-                        // Add wait statements if needed
                     }
                 }
             }
         }
     }
-    // Finally, upon successful deployment and analysis, automated notifications are sent to Slack, keeping the team informed in real-time.
+
     post {
         always {
-            echo 'Slack Notification.'
+            echo 'Sending Slack Notification...'
             slackSend channel: '#devops-cicd-pipeline',
                 color: COLOR_MAP[currentBuild.currentResult],
-                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info: ${env.BUILD_URL}"
         }
     }
 }
@@ -194,4 +198,4 @@ def executeCommand(command, errorMessage) {
             echo "${errorMessage} (Exit code: ${result})"
         }
     }
-} 
+}
