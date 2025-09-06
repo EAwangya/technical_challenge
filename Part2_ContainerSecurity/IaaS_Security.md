@@ -17,7 +17,7 @@ The mistake is often cloud customers assume the cloud provider is responsible fo
 
 ____________________
 
-# ☁️ Infrastructure as a Service (IaaS) Security
+# Infrastructure as a Service (IaaS) Security
 
 ## What is IaaS?
 Infrastructure as a Service provides **virtualized computing resources** over the internet, such as:

@@ -1,4 +1,4 @@
-# 🔐 Network Security Measures
+# Network Security Measures
 
 ## Objective
 Enhance the organization's defense posture by strengthening network security and reducing attack vectors.
