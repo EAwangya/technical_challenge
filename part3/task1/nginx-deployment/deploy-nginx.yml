@@ -1,0 +1,50 @@
+---
+- name: Deploy NGINX Web Server with Custom Homepage
+  hosts: webservers
+  become: yes
+
+  vars:
+    nginx_package: nginx
+    web_root: /usr/share/nginx/html
+    index_file: "{{ web_root }}/index.html"
+    local_index_path: files/index.html
+
+  tasks:
+
+    - name: Install NGINX
+      package:
+        name: "{{ nginx_package }}"
+        state: present
+
+    - name: Ensure NGINX is running and enabled
+      service:
+        name: "{{ nginx_package }}"
+        state: started
+        enabled: yes
+
+    - name: Upload custom index.html
+      copy:
+        src: "{{ local_index_path }}"
+        dest: "{{ index_file }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Open HTTP port in firewall (if firewalld is running)
+      when: ansible_os_family == "RedHat"
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Reload firewalld
+      when: ansible_os_family == "RedHat"
+      command: firewall-cmd --reload
+      notify: Restart NGINX
+
+  handlers:
+    - name: Restart NGINX
+      service:
+        name: "{{ nginx_package }}"
+        state: restarted
