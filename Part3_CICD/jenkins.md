@@ -66,3 +66,11 @@ The pipeline is structured into several key stages to ensure a smooth and automa
 ### **Notifications**
 - **Purpose:** Provides real-time status updates on the pipeline's execution.
 - **Details:** Upon completion of the pipeline (regardless of success or failure), an automated notification is sent to a specified Slack channel, informing the team about the build status, job name, and a link to the build log.
+
+> **Note:**  
+> This repository does not include supporting files and directories such as:  
+> - **Dockerfile** for building the application image  
+> - **Terraform** directory with configuration files to provision the AKS cluster  
+> - **Kubernetes** manifests for application deployments  
+>
+> Only the **Jenkinsfile** is provided as part of this submission.
