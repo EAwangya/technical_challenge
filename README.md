@@ -26,6 +26,6 @@ The exercise is designed to evaluate skills in **cybersecurity, container securi
 │   └── github-actions.yml      # (Optional) GitHub Actions workflow for AWS Lambda
 │
 ├── docs/                       # Any additional supporting documents (PDFs, slides, notes)
-│   └── TEKSystems Challenge.pdf
+│   └── TEKSystemsChallenge.pdf
 │
 └── README.md                   # You are here – overview and instructions
